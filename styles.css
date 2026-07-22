@@ -18,10 +18,10 @@
     --glass-highlight: rgba(255, 255, 255, 0.7);
     --glass-shadow: rgba(56, 44, 35, 0.12);
     
-    /* Şriftlər */
-    --font-serif: 'Playfair Display', serif;
-    --font-decorative: 'Cinzel Decorative', serif;
-    --font-sans: 'Montserrat', sans-serif;
+    /* Şriftlər (Azərbaycan dili "ə", "Ə", "ç", "ş", "ğ", "ı", "ö", "ü" hərflərini 100% dəstəkləyən lüks şriftlər) */
+    --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+    --font-decorative: 'Cinzel Decorative', 'Cormorant Garamond', 'Playfair Display', serif;
+    --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Reset & Təməl Qaydalar */
