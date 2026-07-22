@@ -1,9 +1,5 @@
 {
-  "version": 2,
-  "functions": {
-    "api/wishes.js": {
-      "maxDuration": 10,
-      "memory": 256
-    }
-  }
+  "rewrites": [
+    { "source": "/api/wishes", "destination": "/api/wishes.js" }
+  ]
 }
