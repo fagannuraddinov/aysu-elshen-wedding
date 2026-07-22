@@ -2,11 +2,13 @@
   "name": "aysu-elshen-wedding",
   "version": "1.0.0",
   "description": "Aysu & Elshen Wedding Invitation - Premium toy devetnamesi",
+  "main": "app.js",
   "scripts": {
     "build": "echo 'Static build complete'"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "express": "^5.2.1"
   },
   "engines": {
     "node": "22.x"
