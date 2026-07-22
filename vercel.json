@@ -1,3 +1,5 @@
 {
-  "cleanUrls": false
+  "rewrites": [
+    { "source": "/api/wishes", "destination": "/api/wishes.js" }
+  ]
 }
