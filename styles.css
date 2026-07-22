@@ -1098,7 +1098,13 @@ body.envelope-closed {
 /* ==========================================================================
    RESPONSİVE UYĞUNLAŞMA (Mobile Adaptability)
    ========================================================================== */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+    html, body {
+        background-attachment: scroll !important;
+        background-position: center top !important;
+        background-size: cover !important;
+    }
+    
     .envelope-title {
         font-size: 2.2rem;
     }
