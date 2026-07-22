@@ -2,6 +2,7 @@
   "name": "aysu-elshen-wedding",
   "version": "1.0.0",
   "description": "Aysu & Elshen Wedding Invitation - Premium toy devetnamesi",
+  "main": "index.js",
   "scripts": {
     "build": "echo 'Static build complete'"
   },
