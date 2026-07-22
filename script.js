@@ -337,7 +337,7 @@ class Petal {
 }
 
 // Konfeti Sinifi (Daimi yağacaq konfetilər)
-let isConfettiActive = false;
+let isConfettiActive = true;
 let confettis = [];
 
 class Confetti {
