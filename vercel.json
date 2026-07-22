@@ -1,5 +1,21 @@
 {
-  "rewrites": [
-    { "source": "/api/wishes", "destination": "/api/wishes.js" }
+  "version": 2,
+  "builds": [
+    { "src": "api/wishes.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "admin.html", "use": "@vercel/static" },
+    { "src": "styles.css", "use": "@vercel/static" },
+    { "src": "script.js", "use": "@vercel/static" },
+    { "src": "background.png", "use": "@vercel/static" },
+    { "src": "track.m4a", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/wishes", "dest": "/api/wishes.js" },
+    { "src": "/admin.html", "dest": "/admin.html" },
+    { "src": "/styles.css", "dest": "/styles.css" },
+    { "src": "/script.js", "dest": "/script.js" },
+    { "src": "/background.png", "dest": "/background.png" },
+    { "src": "/track.m4a", "dest": "/track.m4a" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
