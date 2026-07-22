@@ -20,7 +20,7 @@
     
     /* Şriftlər (Azərbaycan dili "ə", "Ə", "ç", "ş", "ğ", "ı", "ö", "ü" hərflərini 100% dəstəkləyən lüks şriftlər) */
     --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-    --font-decorative: 'Cinzel Decorative', 'Cormorant Garamond', 'Playfair Display', serif;
+    --font-decorative: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
     --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
