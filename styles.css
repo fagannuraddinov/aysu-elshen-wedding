@@ -749,8 +749,6 @@ body.envelope-closed {
     background-color: var(--secondary-beige);
 }
 
-}
-
 /* Qonaq Kitabı (Guestbook & Təbriklər Formu) */
 .guestbook-form {
     display: flex;
@@ -875,8 +873,6 @@ body.envelope-closed {
     font-style: italic;
     font-weight: 400;
     white-space: pre-wrap;
-}
-
 }
 
 /* Təşəkkür Modalı (Guestbook Thank You Modal) */
