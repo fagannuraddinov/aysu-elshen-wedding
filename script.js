@@ -343,37 +343,34 @@ let confettis = [];
 class Confetti {
     constructor() {
         this.reset();
-        this.y = Math.random() * canvas.height; // start scattered
+        this.y = Math.random() * canvas.height; // start scattered across screen
     }
     
     reset() {
         this.x = Math.random() * canvas.width;
-        this.y = -20;
-        this.width = Math.random() * 6 + 4;
-        this.height = Math.random() * 10 + 6;
-        this.speedY = Math.random() * 1.8 + 1.2;
-        this.speedX = Math.random() * 0.8 - 0.4;
+        this.y = -30;
+        this.width = Math.random() * 8 + 6;
+        this.height = Math.random() * 14 + 8;
+        this.speedY = Math.random() * 2.2 + 1.2;
+        this.speedX = Math.random() * 1.2 - 0.6;
         this.rotation = Math.random() * 360;
-        this.rotationSpeed = Math.random() * 3 - 1.5;
+        this.rotationSpeed = Math.random() * 4 - 2;
         this.oscillation = Math.random() * 2 * Math.PI;
-        this.oscillationSpeed = Math.random() * 0.03 + 0.01;
-        // Theme-colored confetti: primary-brown, secondary-beige, accent-caramel, white/cream, soft-caramel
-        this.color = ["#5c4a3c", "#8c7561", "#b09984", "#faf6f0", "#eadaa6"][Math.floor(Math.random() * 5)];
+        this.oscillationSpeed = Math.random() * 0.04 + 0.015;
+        // Vibrant Golden, Champagne, Rose Gold & Warm Caramel Confetti
+        this.color = ["#d4af37", "#f3e5ab", "#e6c687", "#ffffff", "#b09984", "#5c4a3c"][Math.floor(Math.random() * 6)];
     }
     
     update() {
         this.y += this.speedY;
-        this.x += this.speedX + Math.sin(this.oscillation) * 0.4;
+        this.x += this.speedX + Math.sin(this.oscillation) * 0.6;
         this.oscillation += this.oscillationSpeed;
         this.rotation += this.rotationSpeed;
         
-        // Scroll parallax
-        this.y -= scrollYOffset * 0.07;
-        
-        if (this.y > canvas.height + 20) {
+        if (this.y > canvas.height + 30) {
             this.reset();
         }
-        if (this.x < -20 || this.x > canvas.width + 20) {
+        if (this.x < -30 || this.x > canvas.width + 30) {
             this.x = Math.random() * canvas.width;
         }
     }
@@ -407,7 +404,7 @@ function initParticles() {
     }
 
     if (isConfettiActive) {
-        const confettiCount = Math.min(80, Math.floor(window.innerWidth / 10));
+        const confettiCount = Math.min(100, Math.floor(window.innerWidth / 7));
         for (let i = 0; i < confettiCount; i++) {
             confettis.push(new Confetti());
         }
