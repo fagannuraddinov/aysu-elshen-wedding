@@ -4,11 +4,23 @@
  */
 const { createClient } = require('@supabase/supabase-js');
 
-// Supabase client — environment variables Vercel dashboard-da təyin edilir
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-);
+let supabaseClient = null;
+function getSupabase() {
+    if (!supabaseClient) {
+        const url = process.env.SUPABASE_URL;
+        const key = process.env.SUPABASE_ANON_KEY;
+        if (!url || !key) {
+            throw new Error("SUPABASE_URL or SUPABASE_ANON_KEY is missing in Environment Variables");
+        }
+        supabaseClient = createClient(url, key);
+    }
+    return supabaseClient;
+}
+
+function sendJson(res, statusCode, payload) {
+    res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(payload));
+}
 
 module.exports = async function handler(req, res) {
     // CORS Başlıqları
@@ -18,10 +30,13 @@ module.exports = async function handler(req, res) {
 
     // OPTIONS (preflight) sorğusu
     if (req.method === 'OPTIONS') {
-        return res.status(204).end();
+        res.writeHead(204);
+        return res.end();
     }
 
     try {
+        const supabase = getSupabase();
+
         // ── GET /api/wishes ── Bütün mesajları gətir
         if (req.method === 'GET') {
             const { data, error } = await supabase
@@ -31,31 +46,35 @@ module.exports = async function handler(req, res) {
 
             if (error) throw error;
 
-            // Köhnə frontend-lə uyğunluq üçün created_at → timestamp
-            const wishes = data.map(w => ({ ...w, timestamp: w.created_at }));
-            return res.status(200).json(wishes);
+            const wishes = (data || []).map(w => ({ ...w, timestamp: w.created_at }));
+            return sendJson(res, 200, wishes);
         }
 
         // ── POST /api/wishes ── Yeni mesaj əlavə et
         if (req.method === 'POST') {
-            const { name, message } = req.body;
+            let bodyData = req.body;
+            if (typeof bodyData === 'string') {
+                try { bodyData = JSON.parse(bodyData); } catch (e) {}
+            }
+
+            const { name, message } = bodyData || {};
 
             if (!name || !message) {
-                return res.status(400).json({ error: 'Ad və mesaj mütləqdir' });
+                return sendJson(res, 400, { error: 'Ad və mesaj mütləqdir' });
             }
 
             const { data, error } = await supabase
                 .from('wishes')
                 .insert([{
-                    name:    name.substring(0, 100),
-                    message: message.substring(0, 1000)
+                    name:    String(name).substring(0, 100),
+                    message: String(message).substring(0, 1000)
                 }])
                 .select()
                 .single();
 
             if (error) throw error;
 
-            return res.status(201).json({
+            return sendJson(res, 201, {
                 success: true,
                 wish: { ...data, timestamp: data.created_at }
             });
@@ -63,10 +82,10 @@ module.exports = async function handler(req, res) {
 
         // ── DELETE /api/wishes?id=xxx ── Mesajı sil (admin panel)
         if (req.method === 'DELETE') {
-            const { id } = req.query;
+            const id = req.query ? req.query.id : null;
 
             if (!id) {
-                return res.status(400).json({ error: 'ID parametri mütləqdir' });
+                return sendJson(res, 400, { error: 'ID parametri mütləqdir' });
             }
 
             const { error } = await supabase
@@ -76,13 +95,13 @@ module.exports = async function handler(req, res) {
 
             if (error) throw error;
 
-            return res.status(200).json({ success: true });
+            return sendJson(res, 200, { success: true });
         }
 
-        return res.status(405).json({ error: 'Metod dəstəklənmir' });
+        return sendJson(res, 405, { error: 'Metod dəstəklənmir' });
 
     } catch (err) {
         console.error('API Xətası:', err.message);
-        return res.status(500).json({ error: 'Server xətası baş verdi' });
+        return sendJson(res, 500, { error: err.message || 'Server xətası baş verdi' });
     }
 };

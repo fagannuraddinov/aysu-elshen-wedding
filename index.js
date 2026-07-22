@@ -39,11 +39,13 @@ module.exports = async (req, res) => {
 
     try {
         const fileBuffer = fs.readFileSync(filePath);
+        res.statusCode = 200;
         res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
-        return res.status(200).send(fileBuffer);
+        return res.end(fileBuffer);
     } catch (err) {
         console.error('File serving error:', err);
-        return res.status(404).send('Not Found');
+        res.statusCode = 404;
+        return res.end('Not Found');
     }
 };
