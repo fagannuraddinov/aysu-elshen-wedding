@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aysu & Elşən - Admin Panel</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="admin-page">
+
+    <!-- Persistent Background Overlay -->
+    <div class="floating-orb orb-1"></div>
+    <div class="floating-orb orb-2"></div>
+
+    <main class="main-content visible" style="padding: 40px 10px; min-height: 100vh;">
+        <div class="parallax-container" style="max-width: 800px;">
+            
+            <!-- 1. LOGIN SECTION -->
+            <section id="admin-login-section" class="invitation-card glass-card card-show">
+                <div class="card-inner">
+                    <h2 class="section-title">Admin Girişi</h2>
+                    <p class="rsvp-text" style="margin-bottom: 20px; text-align: center;">Təbrikləri idarə etmək üçün admin şifrəsini daxil edin.</p>
+                    
+                    <form id="login-form" style="width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                        <input type="password" id="admin-password" placeholder="Şifrə daxil edin" required 
+                               style="width: 100%; padding: 14px 20px; border-radius: 30px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.6); color: var(--text-dark-brown); font-size: 1rem; font-family: var(--font-sans); outline: none; text-align: center; font-weight: 600;">
+                        
+                        <button type="submit" class="whatsapp-btn" style="width: 100%; border: none;">
+                            <span>Daxil Ol</span>
+                        </button>
+                    </form>
+                    <p id="login-error" style="color: #c0392b; font-size: 0.85rem; margin-top: 10px; display: none; font-weight: 600;">Şifrə yanlışdır!</p>
+                </div>
+            </section>
+
+            <!-- 2. MANAGEMENT SECTION (Hidden by default) -->
+            <section id="admin-panel-section" class="invitation-card glass-card" style="display: none;">
+                <div class="card-inner" style="align-items: stretch; text-align: left;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;">
+                        <h2 class="timeline-event-title" style="font-size: 1.5rem; margin: 0;">Ürək Sözləri Modifikasiyası</h2>
+                        <button id="logout-btn" class="map-button" style="padding: 8px 18px; font-size: 0.75rem; border-radius: 15px;">
+                            <span>Çıxış</span>
+                        </button>
+                    </div>
+
+                    <p class="rsvp-text" style="margin-bottom: 20px;">Qonaqlar tərəfindən yazılmış bütün mesajların siyahısı aşağıdadır. İstənməyən və ya nalayiq mesajları dərhal silə bilərsiniz.</p>
+
+                    <!-- Wishes Table/List Container -->
+                    <div id="admin-wishes-list" class="admin-wishes-list" style="display: flex; flex-direction: column; gap: 15px; max-height: 500px; overflow-y: auto; padding-right: 5px;">
+                        <!-- Wishes will be loaded here dynamically -->
+                        <p style="text-align: center; color: var(--text-muted-brown);">Yüklənir...</p>
+                    </div>
+
+                    <div style="margin-top: 30px; text-align: center;">
+                        <a href="/" class="map-button">
+                            <svg class="map-icon" viewBox="0 0 24 24" style="transform: rotate(180deg);">
+                                <path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-8.29-1.42 1.42 5.43 5.43H5v2z"/>
+                            </svg>
+                            <span>Dəvətnamə Səhifəsinə Qayıt</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Admin Logic -->
+    <script>
+        const loginSection = document.getElementById('admin-login-section');
+        const panelSection = document.getElementById('admin-panel-section');
+        const loginForm = document.getElementById('login-form');
+        const passwordInput = document.getElementById('admin-password');
+        const loginError = document.getElementById('login-error');
+        const logoutBtn = document.getElementById('logout-btn');
+        const wishesList = document.getElementById('admin-wishes-list');
+
+        const ADMIN_PASSWORD = 'admin123';
+
+        // Check Session Login State
+        if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
+            showPanel();
+        }
+
+        // Form Login Submit
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (passwordInput.value === ADMIN_PASSWORD) {
+                sessionStorage.setItem('isAdminLoggedIn', 'true');
+                loginError.style.display = 'none';
+                passwordInput.value = '';
+                showPanel();
+            } else {
+                loginError.style.display = 'block';
+                passwordInput.value = '';
+            }
+        });
+
+        // Logout action
+        logoutBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('isAdminLoggedIn');
+            location.reload();
+        });
+
+        function showPanel() {
+            loginSection.style.display = 'none';
+            panelSection.style.display = 'block';
+            panelSection.classList.add('card-show');
+            loadWishes();
+        }
+
+        // Load all wishes
+        function loadWishes() {
+            wishesList.innerHTML = '<p style="text-align: center; color: var(--text-muted-brown);">Yüklənir...</p>';
+            
+            fetch('/api/wishes')
+                .then(res => res.json())
+                .then(data => {
+                    wishesList.innerHTML = '';
+                    if (data.length === 0) {
+                        wishesList.innerHTML = '<p style="text-align: center; color: var(--text-muted-brown); padding: 20px;">Hələ heç bir təbrik mesajı yazılmayıb.</p>';
+                        return;
+                    }
+
+                    // Sort wishes newest first
+                    data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                    data.forEach(wish => {
+                        const date = new Date(wish.timestamp).toLocaleString('az-AZ', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        const wishItem = document.createElement('div');
+                        wishItem.style.background = 'rgba(255, 255, 255, 0.35)';
+                        wishItem.style.border = '1px solid rgba(92, 74, 60, 0.08)';
+                        wishItem.style.borderRadius = '16px';
+                        wishItem.style.padding = '15px 20px';
+                        wishItem.style.display = 'flex';
+                        wishItem.style.justifyContent = 'space-between';
+                        wishItem.style.alignItems = 'center';
+                        wishItem.style.gap = '15px';
+
+                        wishItem.innerHTML = `
+                            <div style="flex-grow: 1;">
+                                <h4 class="timeline-event-title" style="margin-bottom: 2px; font-size: 1rem;">${escapeHTML(wish.name)}</h4>
+                                <span style="font-size: 0.75rem; color: var(--secondary-beige); display: block; margin-bottom: 8px;">${date}</span>
+                                <p style="font-size: 0.85rem; color: var(--text-dark-brown); line-height: 1.4; white-space: pre-wrap;">"${escapeHTML(wish.message)}"</p>
+                            </div>
+                            <button class="map-button delete-btn" data-id="${wish.id}" style="padding: 10px 18px; font-size: 0.8rem; background: rgba(192, 57, 43, 0.1); border-color: rgba(192, 57, 43, 0.3); color: #c0392b; flex-shrink: 0; border-radius: 10px;">
+                                Sil
+                            </button>
+                        `;
+                        wishesList.appendChild(wishItem);
+                    });
+
+                    // Add Event Listeners to Delete Buttons
+                    document.querySelectorAll('.delete-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            if (confirm('Bu mesajı bazadan tamamilə silmək istədiyinizdən əminsiniz?')) {
+                                deleteWish(id);
+                            }
+                        });
+                    });
+                })
+                .catch(err => {
+                    console.error('Mesajlar yüklənərkən xəta:', err);
+                    wishesList.innerHTML = '<p style="text-align: center; color: #c0392b; padding: 20px;">Yükləmə xətası baş verdi.</p>';
+                });
+        }
+
+        // Delete a wish
+        function deleteWish(id) {
+            fetch(`/api/wishes?id=${id}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadWishes();
+                } else {
+                    alert('Silinmə zamanı xəta baş verdi.');
+                }
+            })
+            .catch(err => {
+                console.error('Silinmə xətası:', err);
+                alert('Serverlə əlaqə xətası baş verdi.');
+            });
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>

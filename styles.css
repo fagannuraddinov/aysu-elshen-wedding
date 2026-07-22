@@ -1,0 +1,1199 @@
+/* ==========================================================================
+   PREMIUM TOY DƏVƏTNAMƏSİ - BEJ & QƏHVƏYİ DİZAYN SİSTEMİ
+   ========================================================================== */
+
+:root {
+    /* Rəng Palitrası (Qızılı, qırmızı və qara istifadə olunmayıb, bej və qəhvəyi tonlar) */
+    --bg-warm-ivory: #faf6f0;
+    --primary-brown: #5c4a3c;        /* Dərin isti qəhvəyi - Mətnlər və əsas vurğular üçün */
+    --secondary-beige: #8c7561;      /* İsti bej/karamel - Alt başlıqlar üçün */
+    --accent-caramel: #b09984;       /* Yumşaq süd-qəhvə tonu - Detallar üçün */
+    --accent-cream: #eadaa6;         /* Zərif krem tonu */
+    --text-dark-brown: #382c23;      /* Tünd şokolad qəhvəyi - Əsas oxunaqlı mətnlər üçün */
+    --text-muted-brown: #6e5e53;     /* Yumşaq qəhvəyi mətn tonu */
+    
+    /* Şüşə Effekti (Glassmorphism - Açıq fon üzərində oxunaqlı olması üçün krem-ağ şüşə) */
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(92, 74, 60, 0.15);
+    --glass-highlight: rgba(255, 255, 255, 0.4);
+    --glass-shadow: rgba(92, 74, 60, 0.12);
+    
+    /* Şriftlər */
+    --font-serif: 'Playfair Display', serif;
+    --font-decorative: 'Cinzel Decorative', serif;
+    --font-sans: 'Montserrat', sans-serif;
+}
+
+/* Reset & Təməl Qaydalar */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    color: var(--text-dark-brown);
+    background-color: var(--bg-warm-ivory);
+    
+    /* Daimi arxa fon şəkli (Wedding Day mövzusunda bej-qəhvəyi tonlu şəkil) */
+    background-image: linear-gradient(rgba(250, 246, 240, 0.5), rgba(240, 230, 218, 0.5)), url('background.png');
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+/* Zərf bağlı olarkən skrolu bağlayırıq */
+body.envelope-closed {
+    overflow: hidden;
+}
+
+/* Scrollbar dizaynı */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-warm-ivory);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(92, 74, 60, 0.2);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(92, 74, 60, 0.4);
+}
+
+/* ==========================================================================
+   ARXA FON CANVASI & HİSSƏCİKLƏR (Canvas & Particles)
+   ========================================================================== */
+#particle-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   TAM EKRAN ZƏRF (Full-screen Envelope)
+   ========================================================================== */
+.envelope-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    transition: visibility 1.2s, opacity 1.2s;
+}
+
+/* Zərf Hissələri (Üst və Alt qapaqlar - Zərif bej/karamel tonlarında) */
+.envelope-half {
+    position: absolute;
+    width: 100%;
+    height: 50vh;
+    left: 0;
+    background: linear-gradient(135deg, #eaddce 0%, #d8c3b0 100%);
+    transition: transform 1.5s cubic-bezier(0.77, 0, 0.175, 1);
+    z-index: 1;
+}
+
+.top-half {
+    top: 0;
+    border-bottom: 2px solid rgba(92, 74, 60, 0.15);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.bottom-half {
+    bottom: 0;
+    border-top: 2px solid rgba(92, 74, 60, 0.15);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Zərf naxışları */
+.envelope-pattern {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.12;
+    pointer-events: none;
+}
+
+.top-pattern {
+    background-image: radial-gradient(circle at 50% 100%, var(--primary-brown) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+.bottom-pattern {
+    background-image: radial-gradient(circle at 50% 0%, var(--primary-brown) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* ==========================================================================
+   ZƏRF AÇILARKƏN DÜŞƏN KÖLGƏ EFEKTİ (Ehtiyac olarsa bu bloku silə bilərsiniz)
+   ========================================================================== */
+.envelope-shadow-effect .top-half {
+    box-shadow: 0 15px 50px rgba(92, 74, 60, 0.4), 0 30px 100px rgba(140, 117, 97, 0.2);
+}
+
+.envelope-shadow-effect .bottom-half {
+    box-shadow: 0 -15px 50px rgba(92, 74, 60, 0.4), 0 -30px 100px rgba(140, 117, 97, 0.2);
+}
+/* ========================================================================== */
+
+/* Mərkəzi Möhür və Başlıqlar */
+.envelope-center-content {
+    position: absolute;
+    z-index: 2;
+    text-align: center;
+    width: 90%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
+}
+
+.envelope-names {
+    margin-bottom: 40px;
+    opacity: 1;
+    transform: translateY(0);
+    transition: transform 0.8s ease, opacity 0.8s ease;
+}
+
+.envelope-title {
+    font-family: var(--font-decorative);
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--primary-brown);
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(234, 218, 166, 0.2);
+    margin-bottom: 10px;
+}
+
+.envelope-subtitle {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--secondary-beige);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+}
+
+.envelope-divider {
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--secondary-beige), transparent);
+    margin: 15px auto;
+}
+
+.envelope-date-preview {
+    font-size: 1rem;
+    color: var(--text-muted-brown);
+    letter-spacing: 4px;
+}
+
+/* Wax Seal Butonu (Dərin şokolad qəhvəyi tonu və parıltılı) */
+.seal-button {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    transition: transform 0.3s ease;
+}
+
+.seal-ring {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px dashed rgba(140, 117, 97, 0.5);
+    border-radius: 50%;
+    animation: rotate 15s linear infinite;
+}
+
+.seal-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(92, 74, 60, 0.95);
+    border: 2px solid var(--accent-caramel);
+    box-shadow: 0 0 25px rgba(92, 74, 60, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.heart-icon {
+    width: 32px;
+    height: 32px;
+    fill: var(--accent-caramel);
+    margin-bottom: 8px;
+    animation: pulse 1.8s infinite;
+    filter: drop-shadow(0 0 5px rgba(176, 153, 132, 0.5));
+}
+
+.seal-text {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #f7f3ee;
+}
+
+/* Hover Animasiyaları */
+.seal-button:hover {
+    transform: scale(1.08);
+}
+
+.seal-button:hover .seal-inner {
+    border-color: var(--accent-cream);
+    box-shadow: 0 0 35px rgba(92, 74, 60, 0.6);
+}
+
+.seal-button:hover .seal-ring {
+    border-color: rgba(92, 74, 60, 0.8);
+    animation-duration: 8s;
+}
+
+/* Zərf Açılandan sonrakı CSS vəziyyətləri */
+.envelope-wrapper.opened {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.envelope-wrapper.opened .top-half {
+    transform: translateY(-100%);
+}
+
+.envelope-wrapper.opened .bottom-half {
+    transform: translateY(100%);
+}
+
+.envelope-wrapper.opened .envelope-center-content {
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0;
+}
+
+/* ==========================================================================
+   ƏSAS VIZUAL LAYOUT (Main Invitation Page)
+   ========================================================================== */
+.main-content {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    padding: 60px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.main-content.visible {
+    opacity: 1;
+}
+
+.parallax-container {
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+/* ==========================================================================
+   GLASSMORPHISM TOY KARTLARI (Krem-ağ şüşə, qəhvəyi mətnlər ilə)
+   ========================================================================== */
+.glass-card {
+    position: relative;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 24px;
+    padding: 45px 35px;
+    box-shadow: 0 20px 50px var(--glass-shadow), 
+                inset 0 0 20px rgba(255, 255, 255, 0.4);
+    overflow: hidden;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    transform: translateY(30px);
+    opacity: 0;
+}
+
+/* Scroll-da aktivləşən daxili kart animasiyası */
+.glass-card.card-show {
+    transform: translateY(0);
+    opacity: 1;
+    transition: transform 1s cubic-bezier(0.1, 0.8, 0.2, 1), 
+                opacity 1s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px rgba(92, 74, 60, 0.25), 
+                0 0 30px rgba(140, 117, 97, 0.15);
+    border-color: rgba(92, 74, 60, 0.25);
+}
+
+.card-inner {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Glow Border effekti (bej parıltı) */
+.card-border-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 24px;
+    background: linear-gradient(135deg, transparent, rgba(176, 153, 132, 0.15), transparent, rgba(92, 74, 60, 0.05));
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* 1. Hero Bölməsi */
+.card-tag {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--secondary-beige);
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.couple-names {
+    font-family: var(--font-decorative);
+    font-size: 3.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 15px;
+    color: var(--primary-brown);
+    text-shadow: 0 0 15px rgba(92, 74, 60, 0.1);
+    letter-spacing: 1px;
+}
+
+.heart-divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 250px;
+    margin-bottom: 25px;
+}
+
+.heart-divider .line {
+    flex-grow: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(92, 74, 60, 0.3), transparent);
+}
+
+.card-heart {
+    width: 18px;
+    height: 18px;
+    fill: var(--secondary-beige);
+    margin: 0 10px;
+    filter: drop-shadow(0 0 3px rgba(92, 74, 60, 0.2));
+}
+
+.main-invitation-text {
+    font-family: var(--font-serif);
+    font-size: 1.45rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    color: var(--primary-brown);
+    font-weight: 600;
+}
+
+.romantic-quote {
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--text-muted-brown);
+    font-style: italic;
+    max-width: 520px;
+    font-weight: 400;
+}
+
+/* 2. Geri Sayım (Countdown) */
+.section-title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    color: var(--primary-brown);
+    margin-bottom: 30px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 1.5px;
+    background-color: var(--secondary-beige);
+}
+
+.countdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.countdown-item {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(92, 74, 60, 0.08);
+    border-radius: 16px;
+    padding: 15px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s ease;
+}
+
+.countdown-item:hover {
+    transform: scale(1.05);
+    border-color: rgba(92, 74, 60, 0.25);
+}
+
+.countdown-num {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--primary-brown);
+    text-shadow: 0 0 10px rgba(92, 74, 60, 0.05);
+    margin-bottom: 5px;
+}
+
+.countdown-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted-brown);
+}
+
+/* 3. Detallar & Xəritə */
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    width: 100%;
+    margin-bottom: 35px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(92, 74, 60, 0.05);
+}
+
+.detail-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: rgba(92, 74, 60, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    border: 1px solid rgba(92, 74, 60, 0.15);
+    flex-shrink: 0;
+}
+
+.detail-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--primary-brown);
+}
+
+.detail-text h4 {
+    font-size: 1.1rem;
+    color: var(--primary-brown);
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.detail-text p {
+    font-size: 0.9rem;
+    color: var(--text-muted-brown);
+    line-height: 1.5;
+}
+
+/* Məkan Xəritə Butonu */
+.map-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(92, 74, 60, 0.15);
+    color: var(--text-dark-brown);
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(92, 74, 60, 0.08);
+}
+
+.map-icon {
+    width: 18px;
+    height: 18px;
+    fill: var(--secondary-beige);
+    transition: transform 0.3s ease;
+}
+
+.map-button:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(176, 153, 132, 0.15));
+    border-color: var(--secondary-beige);
+    box-shadow: 0 8px 25px rgba(92, 74, 60, 0.15);
+    transform: translateY(-2px);
+}
+
+.map-button:hover .map-icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+/* Təqvim Xatırladıcısı Butonları */
+.calendar-buttons-container {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.calendar-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(92, 74, 60, 0.15);
+    color: var(--text-dark-brown);
+    padding: 14px 20px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(92, 74, 60, 0.08);
+    flex: 1;
+    font-family: var(--font-sans);
+    outline: none;
+}
+
+.calendar-btn-icon {
+    width: 18px;
+    height: 18px;
+    fill: var(--secondary-beige);
+    transition: transform 0.3s ease;
+}
+
+.calendar-button:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(176, 153, 132, 0.15));
+    border-color: var(--secondary-beige);
+    box-shadow: 0 8px 25px rgba(92, 74, 60, 0.15);
+    transform: translateY(-2px);
+}
+
+.calendar-button:hover .calendar-btn-icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.calendar-button:active {
+    transform: translateY(-1px);
+}
+
+/* Zaman Xətti (Toy Proqramı Timeline) */
+.timeline-container {
+    position: relative;
+    width: 100%;
+    margin-top: 30px;
+    padding-left: 30px;
+    text-align: left;
+}
+
+/* Şaquli zaman xətti */
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 9px;
+    width: 2px;
+    height: calc(100% - 10px);
+    background: linear-gradient(180deg, var(--secondary-beige) 0%, rgba(140, 117, 97, 0.15) 100%);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 35px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+/* İkon dairəsi */
+.timeline-badge {
+    position: absolute;
+    left: -32px;
+    top: 2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--primary-brown);
+    border: 2px solid var(--bg-warm-ivory);
+    box-shadow: 0 3px 8px rgba(92, 74, 60, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.timeline-icon {
+    width: 12px;
+    height: 12px;
+    fill: #ffffff;
+    transition: transform 0.3s ease;
+}
+
+.timeline-content {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(92, 74, 60, 0.05);
+    border-radius: 16px;
+    padding: 16px 20px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.timeline-time {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--secondary-beige);
+    background: rgba(140, 117, 97, 0.08);
+    border: 1px solid rgba(140, 117, 97, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-bottom: 6px;
+    font-family: var(--font-sans);
+}
+
+.timeline-event-title {
+    font-size: 1.05rem;
+    color: var(--primary-brown);
+    margin-bottom: 4px;
+    font-weight: 700;
+    font-family: var(--font-sans);
+}
+
+.timeline-event-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted-brown);
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+/* Hover Efektləri */
+.timeline-item:hover .timeline-badge {
+    transform: scale(1.15);
+    background-color: var(--secondary-beige);
+}
+
+}
+
+/* Qonaq Kitabı (Guestbook & Təbriklər Formu) */
+.guestbook-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 500px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    width: 100%;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.45);
+    color: var(--text-dark-brown);
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-input::placeholder {
+    color: rgba(110, 94, 83, 0.6);
+}
+
+.form-input:focus {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: var(--secondary-beige);
+    box-shadow: 0 0 12px rgba(140, 117, 97, 0.15);
+}
+
+.form-textarea {
+    resize: none;
+    border-radius: 16px;
+    font-family: var(--font-sans);
+}
+
+/* Göndərilmiş Təbrik Mesajları Container */
+.wishes-display-container {
+    width: 100%;
+    margin-top: 35px;
+    border-top: 1px dashed rgba(92, 74, 60, 0.15);
+    padding-top: 25px;
+}
+
+.wishes-title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--primary-brown);
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+}
+
+.wishes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+/* Mesaj Siyahısı Scrollbar tənzimlənməsi */
+.wishes-list::-webkit-scrollbar,
+.admin-wishes-list::-webkit-scrollbar {
+    width: 5px;
+}
+.wishes-list::-webkit-scrollbar-track,
+.admin-wishes-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+.wishes-list::-webkit-scrollbar-thumb,
+.admin-wishes-list::-webkit-scrollbar-thumb {
+    background: rgba(92, 74, 60, 0.2);
+    border-radius: 3px;
+}
+
+/* Təbrik Mesajı Kartı */
+.wish-card {
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(92, 74, 60, 0.05);
+    border-radius: 16px;
+    padding: 15px 20px;
+    text-align: left;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(92, 74, 60, 0.02);
+}
+
+.wish-card:hover {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(92, 74, 60, 0.15);
+    box-shadow: 0 6px 15px rgba(92, 74, 60, 0.05);
+}
+
+.wish-author {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    color: var(--primary-brown);
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.wish-date {
+    font-size: 0.72rem;
+    color: var(--secondary-beige);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.wish-message {
+    font-size: 0.85rem;
+    color: var(--text-dark-brown);
+    line-height: 1.45;
+    font-style: italic;
+    font-weight: 400;
+    white-space: pre-wrap;
+}
+
+}
+
+/* Təşəkkür Modalı (Guestbook Thank You Modal) */
+/* Modal overlay - bütün display/position stilləri JS tərəfindən idarə olunur */
+.thankyou-modal-overlay {
+    display: none;
+}
+
+.thankyou-modal-card {
+    max-width: 420px;
+    width: 90%;
+    padding: 40px 30px;
+}
+
+
+.thankyou-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(92, 74, 60, 0.08);
+    border: 1px solid rgba(92, 74, 60, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 10px rgba(92, 74, 60, 0.05);
+}
+
+.thankyou-heart-icon {
+    width: 30px;
+    height: 30px;
+    fill: var(--secondary-beige);
+    animation: pulse 1.8s infinite;
+}
+
+/* 4. WhatsApp RSVP Butonu (Qəhvəyi & Bej Gradientli) */
+.rsvp-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-muted-brown);
+    margin-bottom: 25px;
+    max-width: 480px;
+}
+
+.whatsapp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    /* Dərin qəhvəyi-bej gradient */
+    background: linear-gradient(135deg, var(--primary-brown) 0%, var(--secondary-beige) 100%);
+    border: 1px solid var(--primary-brown);
+    color: #ffffff;
+    padding: 16px 36px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 10px 30px rgba(92, 74, 60, 0.15);
+}
+
+.wp-icon {
+    width: 22px;
+    height: 22px;
+    fill: #ffffff;
+}
+
+.whatsapp-btn:hover {
+    background: linear-gradient(135deg, #4d3e32 0%, #766250 100%);
+    border-color: var(--primary-brown);
+    box-shadow: 0 15px 35px rgba(92, 74, 60, 0.3);
+    transform: translateY(-3px) scale(1.02);
+}
+
+.whatsapp-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Footer */
+.invitation-footer {
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+.invitation-footer p {
+    font-size: 0.8rem;
+    color: var(--text-muted-brown);
+    opacity: 0.6;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   MUSIQI PLEYERI WIDGETI (Floating Music Control)
+   ========================================================================== */
+.music-control {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(92, 74, 60, 0.15);
+    transition: all 0.3s ease, opacity 0.5s ease, visibility 0.5s ease;
+    opacity: 1;
+    visibility: visible;
+}
+
+.music-control.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.music-control:hover {
+    transform: scale(1.1);
+    border-color: var(--secondary-beige);
+    box-shadow: 0 12px 30px rgba(92, 74, 60, 0.25);
+}
+
+.music-icon-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.music-svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--primary-brown);
+    transition: fill 0.3s ease;
+}
+
+.music-control.playing .music-svg {
+    fill: var(--secondary-beige);
+    animation: rotate 6s linear infinite;
+}
+
+/* Pleyer işləyəndə səs dalğaları */
+.music-waves {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    opacity: 0;
+}
+
+.music-control.playing .music-waves {
+    opacity: 1;
+}
+
+.music-control.playing .music-svg {
+    opacity: 0.15;
+}
+
+.music-waves span {
+    display: block;
+    width: 2px;
+    height: 10px;
+    background: var(--secondary-beige);
+    border-radius: 1px;
+}
+
+.music-control.playing .music-waves span:nth-child(1) {
+    animation: wave 1.2s ease-in-out infinite;
+}
+.music-control.playing .music-waves span:nth-child(2) {
+    animation: wave 0.8s ease-in-out infinite 0.2s;
+    height: 14px;
+}
+.music-control.playing .music-waves span:nth-child(3) {
+    animation: wave 1s ease-in-out infinite 0.4s;
+}
+
+/* ==========================================================================
+   ANIMASIYA KEYFRAMELARI
+   ========================================================================== */
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 10px rgba(176, 153, 132, 0.7)); }
+    100% { transform: scale(1); opacity: 0.9; }
+}
+
+@keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(50px, -30px) scale(1.1); }
+    100% { transform: translate(-20px, 40px) scale(0.9); }
+}
+
+@keyframes wave {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(2.2); }
+}
+
+/* ==========================================================================
+   RESPONSİVE UYĞUNLAŞMA (Mobile Adaptability)
+   ========================================================================== */
+@media (max-width: 600px) {
+    .envelope-title {
+        font-size: 2.2rem;
+    }
+    
+    .envelope-subtitle {
+        font-size: 0.9rem;
+        letter-spacing: 4px;
+    }
+    
+    .seal-button {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .seal-inner svg {
+        width: 26px;
+        height: 26px;
+        margin-bottom: 4px;
+    }
+    
+    .seal-text {
+        font-size: 0.55rem;
+    }
+    
+    .main-content {
+        padding: 40px 15px;
+    }
+    
+    .couple-names {
+        font-size: 2.4rem;
+    }
+    
+    .main-invitation-text {
+        font-size: 1.25rem;
+    }
+    
+    .glass-card {
+        padding: 30px 20px;
+        border-radius: 18px;
+    }
+    
+    .countdown-grid {
+        gap: 8px;
+    }
+    
+    .countdown-num {
+        font-size: 1.6rem;
+    }
+    
+    .countdown-label {
+        font-size: 0.65rem;
+    }
+    
+    .detail-item {
+        padding: 15px;
+    }
+    
+    .detail-icon {
+        width: 42px;
+        height: 42px;
+        margin-right: 12px;
+    }
+    
+    .detail-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .detail-text h4 {
+        font-size: 1rem;
+    }
+    
+    .detail-text p {
+        font-size: 0.8rem;
+    }
+    
+    .whatsapp-btn {
+        padding: 14px 28px;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+    
+    .map-button {
+        padding: 12px 24px;
+        font-size: 0.8rem;
+        width: 100%;
+    }
+    
+    .calendar-buttons-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .calendar-button {
+        width: 100%;
+        padding: 12px 18px;
+    }
+}
