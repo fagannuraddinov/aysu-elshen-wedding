@@ -6,7 +6,7 @@
 // TƏNZİMLƏMƏLƏR (CONFIGURATIONS)
 // ==========================================================================
 const TOY_TARIXI = "2026-08-19T18:00:00"; // Toyun başlama tarixi və saatı
-const WHATSAPP_NOMRE = "994104672788"; // RSVP üçün nömrə (heç bir boşluq və ya + simvolu olmadan)
+const WHATSAPP_NOMRE = "994773070753"; // RSVP üçün nömrə (heç bir boşluq və ya + simvolu olmadan)
 const WHATSAPP_MESAJ = "Salam Aysu və Elşən. Dəvətnamənizi aldıq, toy gününüz münasibətilə sizi ürəkdən təbrik edir və toyunuzda iştirak edəcəyimizi böyük məmnuniyyətlə təsdiqləyirik! ✨";
 
 // ZƏRF AÇILARKƏN DÜŞƏN KÖLGƏ EFEKTİ
@@ -30,10 +30,6 @@ body.classList.add("envelope-closed");
 if (ENABLE_OPENING_SHADOW) {
     envelopeWrapper.classList.add("envelope-shadow-effect");
 }
-
-// WhatsApp RSVP linkini təyin etmək
-const encodedText = encodeURIComponent(WHATSAPP_MESAJ);
-whatsappBtn.href = `https://api.whatsapp.com/send?phone=${WHATSAPP_NOMRE}&text=${encodedText}`;
 
 // Təqvim Xatırladıcısı elementləri
 const addToCalendarBtn = document.getElementById("add-to-calendar-btn");
@@ -104,9 +100,13 @@ openEnvelopeBtn.addEventListener("click", () => {
     // 5. Musiqi pleyer butonunu göstəririk
     musicControl.classList.remove("hidden");
     
-    // Konfeti yağışını aktiv edirik
+    // Konfeti yağışını aktiv edirik və 8 saniyə sonra dayandırırıq
     isConfettiActive = true;
     initParticles();
+    setTimeout(() => {
+        isConfettiActive = false;
+        confettis = [];
+    }, 8000);
     
     // Zərfin yox olmasından sonra DOM-dan çıxara bilərik ki, performans artsın (1.5s animasiya bitdikdən sonra)
     setTimeout(() => {
@@ -337,7 +337,7 @@ class Petal {
 }
 
 // Konfeti Sinifi (Daimi yağacaq konfetilər)
-let isConfettiActive = true;
+let isConfettiActive = false;
 let confettis = [];
 
 class Confetti {
@@ -462,7 +462,6 @@ window.addEventListener("resize", () => {
 const guestbookForm = document.getElementById("guestbook-form");
 const guestNameInput = document.getElementById("guest-name");
 const guestMessageInput = document.getElementById("guest-message");
-const wishesList = document.getElementById("wishes-list");
 
 // Təhlükəsizlik üçün HTML Escaping funksiyası
 function escapeHTML(str) {
@@ -477,108 +476,73 @@ function escapeHTML(str) {
     );
 }
 
-// Mesajları backend-dən yükləyən funksiya
-function loadWishes() {
-    fetch('/api/wishes')
+// Yeni mesaj yazdıqda form submit handling
+if (guestbookForm) {
+    guestbookForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        
+        const name = guestNameInput ? guestNameInput.value.trim() : "";
+        const message = guestMessageInput ? guestMessageInput.value.trim() : "";
+        
+        if (!name || !message) {
+            alert("Zəhmət olmasa ad, soyad və təbrik mesajınızı daxil edin.");
+            return;
+        }
+        
+        // Göndərmə düyməsini müvəqqəti deaktiv edirik
+        const submitBtn = guestbookForm.querySelector("button[type='submit']");
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.7";
+        }
+        
+        fetch('/api/wishes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, message })
+        })
         .then(res => res.json())
         .then(data => {
-            wishesList.innerHTML = "";
-            
-            if (data.length === 0) {
-                wishesList.innerHTML = '<p class="no-wishes">Hələ heç kim təbrik yazmayıb. İlk yazan siz olun! ✨</p>';
-                return;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = "1";
             }
-
-            // Ən son yazılan mesaj yuxarıda görünsün
-            data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-            data.forEach(wish => {
-                const wishCard = document.createElement("div");
-                wishCard.className = "wish-card";
+            
+            if (data.success) {
+                // Formu təmizləyirik
+                if (guestNameInput) guestNameInput.value = "";
+                if (guestMessageInput) guestMessageInput.value = "";
                 
-                const date = new Date(wish.timestamp).toLocaleString('az-AZ', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                wishCard.innerHTML = `
-                    <h5 class="wish-author">${escapeHTML(wish.name)}</h5>
-                    <span class="wish-date">${date}</span>
-                    <p class="wish-message">"${escapeHTML(wish.message)}"</p>
-                `;
-                
-                wishesList.appendChild(wishCard);
-            });
+                // Təşəkkür modalını açırıq
+                openThankyouModal();
+            } else {
+                alert("Təbrik göndərilərkən xəta baş verdi. Zəhmət olmasa yenidən yoxlayın.");
+            }
         })
         .catch(err => {
-            console.error("Təbrikləri yükləyərkən xəta:", err);
-            wishesList.innerHTML = '<p class="no-wishes" style="color: #c0392b;">Təbrik mesajlarını yükləmək mümkün olmadı.</p>';
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = "1";
+            }
+            console.error("Təbrik göndərilərkən xəta:", err);
+            alert("Serverlə əlaqə qurmaq mümkün olmadı. Zəhmət olmasa internet əlaqənizi yoxlayın.");
         });
+    });
 }
 
-// Yeni mesaj yazdıqda form submit handling
-guestbookForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    
-    const name = guestNameInput.value.trim();
-    const message = guestMessageInput.value.trim();
-    
-    if (!name || !message) return;
-    
-    // Göndərmə düyməsini müvəqqəti deaktiv edirik
-    const submitBtn = guestbookForm.querySelector("button[type='submit']");
-    submitBtn.disabled = true;
-    submitBtn.style.opacity = "0.7";
-    
-    fetch('/api/wishes', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, message })
-    })
-    .then(res => res.json())
-    .then(data => {
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = "1";
-        
-        if (data.success) {
-            // Formu təmizləyirik
-            guestNameInput.value = "";
-            guestMessageInput.value = "";
-            
-            // Mesajları yenidən yükləyirik
-            loadWishes();
-            
-            // Təşəkkür modalını açırıq
-            openThankyouModal();
-        } else {
-            alert("Təbrik göndərilərkən xəta baş verdi. Zəhmət olmasa yenidən yoxlayın.");
-        }
-    })
-    .catch(err => {
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = "1";
-        console.error("Təbrik göndərilərkən xəta:", err);
-        alert("Serverlə əlaqə qurmaq mümkün olmadı. Zəhmət olmasa internet əlaqənizi yoxlayın.");
-    });
-});
-
-// Təşəkkür Modalı - element referansları
+// ==========================================================================
+// TƏŞƏKKÜR MODALI & WHATSAPP RSVP MODALI
+// ==========================================================================
 const closeModalBtn = document.getElementById("close-modal-btn");
 const thankyouModal = document.getElementById("thankyou-modal");
 const modalCard = thankyouModal ? thankyouModal.querySelector(".thankyou-modal-card") : null;
 
-// Modal açmaq fungsiyası - bütün stillər JS ilə inline tətbiq olunur
-// CSS cascade konflikti və position:fixed problemi tamamilə aradan qalxır
 function openThankyouModal() {
-    // Modalı body-nin birbaşa övladı edirik (ən etibarlı üsul)
+    if (!thankyouModal) return;
     document.body.appendChild(thankyouModal);
 
-    // Bütün stilləri birbaşa JS ilə yazırıq — CSS-ə ümumiyyətlə etibar etmirik
     Object.assign(thankyouModal.style, {
         display:         "flex",
         position:        "fixed",
@@ -596,7 +560,6 @@ function openThankyouModal() {
         transition:      "opacity 0.4s ease"
     });
 
-    // Kart animasiyası
     if (modalCard) {
         Object.assign(modalCard.style, {
             transform:  "scale(0.8)",
@@ -604,7 +567,6 @@ function openThankyouModal() {
         });
     }
 
-    // İki frame gözləyirik ki CSS transition işə düşsün
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             thankyouModal.style.opacity = "1";
@@ -613,23 +575,113 @@ function openThankyouModal() {
     });
 }
 
-// Modal bağlamaq fungsiyası
 function closeThankyouModal() {
+    if (!thankyouModal) return;
     thankyouModal.style.opacity = "0";
     if (modalCard) modalCard.style.transform = "scale(0.8)";
-    // Animasiya bitdikdən sonra gizlədirik
     setTimeout(() => {
         thankyouModal.style.display = "none";
     }, 420);
 }
 
-closeModalBtn.addEventListener("click", closeThankyouModal);
+if (closeModalBtn) {
+    closeModalBtn.addEventListener("click", closeThankyouModal);
+}
 
-thankyouModal.addEventListener("click", (e) => {
-    if (e.target === thankyouModal) {
-        closeThankyouModal();
+if (thankyouModal) {
+    thankyouModal.addEventListener("click", (e) => {
+        if (e.target === thankyouModal) {
+            closeThankyouModal();
+        }
+    });
+}
+
+// ── WHATSAPP RSVP MODAL LOGIC ──
+const rsvpModal = document.getElementById("rsvp-modal");
+const rsvpModalCard = rsvpModal ? rsvpModal.querySelector(".thankyou-modal-card") : null;
+const rsvpModalForm = document.getElementById("rsvp-modal-form");
+const rsvpGuestNameInput = document.getElementById("rsvp-guest-name");
+const closeRsvpModalBtn = document.getElementById("close-rsvp-modal-btn");
+
+function openRsvpModal() {
+    if (!rsvpModal) return;
+    document.body.appendChild(rsvpModal);
+
+    Object.assign(rsvpModal.style, {
+        display:         "flex",
+        position:        "fixed",
+        top:             "0",
+        left:            "0",
+        width:           "100vw",
+        height:          "100vh",
+        background:      "rgba(92, 74, 60, 0.4)",
+        backdropFilter:  "blur(15px)",
+        webkitBackdropFilter: "blur(15px)",
+        justifyContent:  "center",
+        alignItems:      "center",
+        zIndex:          "2147483647",
+        opacity:         "0",
+        transition:      "opacity 0.4s ease"
+    });
+
+    if (rsvpModalCard) {
+        Object.assign(rsvpModalCard.style, {
+            transform:  "scale(0.8)",
+            transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+        });
     }
-});
 
-// Səhifə yükləndikdə mesajları yükləyirik
-loadWishes();
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            rsvpModal.style.opacity = "1";
+            if (rsvpModalCard) rsvpModalCard.style.transform = "scale(1)";
+            if (rsvpGuestNameInput) rsvpGuestNameInput.focus();
+        });
+    });
+}
+
+function closeRsvpModal() {
+    if (!rsvpModal) return;
+    rsvpModal.style.opacity = "0";
+    if (rsvpModalCard) rsvpModalCard.style.transform = "scale(0.8)";
+    setTimeout(() => {
+        rsvpModal.style.display = "none";
+    }, 420);
+}
+
+if (whatsappBtn) {
+    whatsappBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        openRsvpModal();
+    });
+}
+
+if (closeRsvpModalBtn) {
+    closeRsvpModalBtn.addEventListener("click", closeRsvpModal);
+}
+
+if (rsvpModal) {
+    rsvpModal.addEventListener("click", (e) => {
+        if (e.target === rsvpModal) {
+            closeRsvpModal();
+        }
+    });
+}
+
+if (rsvpModalForm) {
+    rsvpModalForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = rsvpGuestNameInput ? rsvpGuestNameInput.value.trim() : "";
+        if (!name) {
+            alert("Zəhmət olmasa ad və soyadınızı daxil edin.");
+            return;
+        }
+
+        const customMsg = `Salam Aysu və Elşən. Mən ${name}. Dəvətnamənizi aldıq, toy gününüz münasibətilə sizi ürəkdən təbrik edir və toyunuzda iştirak edəcəyimizi böyük məmnuniyyətlə təsdiqləyirik! ✨`;
+        const link = `https://api.whatsapp.com/send?phone=${WHATSAPP_NOMRE}&text=${encodeURIComponent(customMsg)}`;
+
+        window.open(link, "_blank");
+        closeRsvpModal();
+        if (rsvpGuestNameInput) rsvpGuestNameInput.value = "";
+    });
+}
